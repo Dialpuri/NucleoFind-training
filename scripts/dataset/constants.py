@@ -3,9 +3,9 @@ DENSITY_SUFFIX = "_density"
 SUGAR_SUFFIX = "_sugar"
 PHOSPHATE_SUFFIX = "_phosphate"
 BASE_SUFFIX = "_base"
-DATA_PATH = ""
-DATASET_DIRECTORY = ""
-TRAINING_DATA_OUT = ""
+DATA_PATH = "data"
+DATASET_DIRECTORY = "training_dataset"
+TRAINING_DATA_OUT = "training_data"
 
 
 def get_sugar_atoms(): 
