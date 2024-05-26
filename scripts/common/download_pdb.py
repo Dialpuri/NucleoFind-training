@@ -1,6 +1,8 @@
 import argparse, os
 import urllib.request
 from tqdm import tqdm 
+import shutil
+import multiprocessing
 
 def main(): 
     parser = argparse.ArgumentParser()
@@ -17,24 +19,34 @@ def main():
         pdb_list = []
         for line in data:
             for pdb in line.split(","):
-                pdb_list.append(pdb.lower())
+                pdb_list.append(pdb.lower().strip("\n"))
 
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)
 
-    for pdb in tqdm(pdb_list): 
-            
-        output_path = os.path.join(args.outputdir, f"{pdb}.mtz")
-        
-        if os.path.exists(output_path):
-            continue
+    data_list = [(args.outputdir, pdb) for pdb in pdb_list]
 
-        try:
-            urllib.request.urlretrieve(f"https://files.rcsb.org/download/{pdb.upper()}.pdb", 
-                                   output_path
-                                   )
-        except:
-            continue
+    with multiprocessing.Pool() as pool_:
+        x = list(tqdm(pool_.imap_unordered(worker, data_list), total=len(data_list)))
+
+def worker(data):
+    output_dir, pdb = data
+    output_path = os.path.join(output_dir, f"{pdb}.pdb")
+        
+    if os.path.exists(output_path):
+        return
+
+    possible_pdb_path = f"/vault/extracted_pdb/pdb/pdb{pdb}.ent"
+    if os.path.exists(possible_pdb_path):
+        shutil.copy(possible_pdb_path, output_path)
+        return
+
+    try:
+        urllib.request.urlretrieve(f"https://files.rcsb.org/download/{pdb.upper()}.pdb", 
+                                output_path
+                                )
+    except:
+        return
 
 
 if __name__ == "__main__":
