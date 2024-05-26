@@ -35,15 +35,33 @@ def sigmoid_focal_crossentropy(
     # compute the final loss and return
     return tf.reduce_sum(alpha_factor * modulating_factor * ce, axis=-1)
 
+def dice_coe(y_true,y_pred, loss_type='jaccard', smooth=1.):
 
+    y_true_f = tf.reshape(y_true,[-1])
+    y_pred_f = tf.reshape(y_pred,[-1])
+
+    intersection = tf.reduce_sum(y_true_f * y_pred_f)
+
+    if loss_type == 'jaccard':
+        union = tf.reduce_sum(tf.square(y_pred_f)) + tf.reduce_sum(tf.square(y_true_f))
+
+    elif loss_type == 'sorensen':
+        union = tf.reduce_sum(y_pred_f) + tf.reduce_sum(y_true_f)
+
+    else:
+        raise ValueError("Unknown `loss_type`: %s" % loss_type)
+
+    return (2. * intersection + smooth) / (union + smooth)
 
 def main(): 
 
-    model_path = "models/phosphate.best.hdf5"
+    # model_path = "models/phosphate.best.hdf5"
+    model_path="/jarvis/jordan/NucleoFind-training-distance/models/phosphate_21-Mar-08_33.best.hdf5"
     model = tf.keras.models.load_model(model_path, custom_objects={ 
-                    "sigmoid_focal_crossentropy": sigmoid_focal_crossentropy
+                    "sigmoid_focal_crossentropy": sigmoid_focal_crossentropy, 
+                    "dice_coe": dice_coe
                 },)
-    model.save("models/phosphate")
+    model.save("distance_models/phosphate_epoch1")
 
 main()
 

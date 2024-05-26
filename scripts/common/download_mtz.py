@@ -39,8 +39,8 @@ def worker(data):
         urllib.request.urlretrieve(f"https://edmaps.rcsb.org/coefficients/{pdb}.mtz", 
                                 output_path
                                 )
-    except:
-        print("Failed to get pdb - ", pdb)
+    except Exception as e:
+        print("Failed to get pdb -", pdb ,e)
         return
 
 
